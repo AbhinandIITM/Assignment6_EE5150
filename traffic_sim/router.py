@@ -61,12 +61,16 @@ class Router:
         if start not in self._adj or end not in self._adj:
             return None
 
-        # (cost, node_id, roads_taken_so_far)
-        heap = [(0.0, start, [])]
+        # Use a tiebreaker to prevent heapq from comparing Road objects
+        # when costs and node_ids are identical.
+        tiebreaker = 0
+        
+        # (cost, tiebreaker, node_id, roads_taken_so_far)
+        heap = [(0.0, tiebreaker, start, [])]
         visited = set()
 
         while heap:
-            cost, node, roads_so_far = heapq.heappop(heap)
+            cost, _, node, roads_so_far = heapq.heappop(heap)
 
             if node in visited:
                 continue
@@ -77,8 +81,9 @@ class Router:
 
             for road, neighbour, weight in self._adj.get(node, []):
                 if neighbour not in visited:
+                    tiebreaker += 1
                     heapq.heappush(heap,
-                        (cost + weight, neighbour, roads_so_far + [road]))
+                        (cost + weight, tiebreaker, neighbour, roads_so_far + [road]))
 
         return None   # no path found
 
